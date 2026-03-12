@@ -27,6 +27,5 @@ onAutoMoodDetected: (callback) => {
   };
 },
   getUserDataPath: () => ipcRenderer.invoke('get-user-data-path'),
-  createTestFile: (filePath) => ipcRenderer.invoke('create-test-file', filePath),
-  openTestFile: (filePath) => ipcRenderer.invoke('open-test-file', filePath),
+
 });
