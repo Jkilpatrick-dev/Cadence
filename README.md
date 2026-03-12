@@ -1,16 +1,53 @@
-# React + Vite
+# Cadence 🎵
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Mood-reactive music player for visual novels (story-driven games with dialogue-heavy narratives). Cadence runs alongside your game and automatically switches music based on the emotional tone of the scene.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## How It Works
 
-## React Compiler
+Cadence monitors your visual novel's dialogue in real-time and detects the emotional tone of each line. It then switches your music to match — tense during confrontations, melancholic during flashbacks, upbeat when things are going well.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+You organize your songs into five mood categories and Cadence handles the rest.
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Features
+
+### 🤖 Auto Mode
+Monitors VN dialogue in real-time and switches music automatically based on detected emotions. A sensitivity threshold prevents it from switching too aggressively.
+
+### 📚 Mood Libraries
+Organize songs into five moods: **Happy**, **Sad**, **Energetic**, **Melancholic**, and **Calm**. Supports both local audio files and YouTube links.
+
+### 📺 YouTube Support
+Build your entire mood library from YouTube links or playlists. No local files required.
+
+### 🎛️ Mood Synthesizer
+Mix multiple moods together for continuous playback across mood categories.
+
+### 🔗 Library Sharing
+Export and import mood libraries via share codes. Use a library someone else built or share yours with the community.
+
+### ⛶ Mini Mode
+Compact overlay that stays on top of your VN while you play.
+
+---
+
+## Ren'Py Setup
+
+Drop a small `autorun.rpy` script into your game folder. It writes spoken dialogue to a text file that Cadence monitors. It does not touch saves, story state, or game mechanics.
+
+---
+
+## Download
+
+Available on **[itch.io](https://justkil.itch.io)** — free, Windows only, no account needed.
+
+---
+
+## Built With
+
+- [Electron](https://www.electronjs.org/)
+- [React](https://react.dev/)
+- [Vite](https://vitejs.dev/)
