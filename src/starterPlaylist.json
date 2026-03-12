@@ -1,0 +1,15 @@
+{
+  "name": "Cadence Starter Pack",
+  "songs": [
+    { "u": "https://www.youtube.com/watch?v=H5oeXBwudmI", "t": "Vesky - Forever", "m": ["Calm"] },
+    { "u": "https://www.youtube.com/watch?v=MK9hxakQMN8", "t": "KAYTRANADA - Intimidated", "m": ["Calm"] },
+    { "u": "https://www.youtube.com/watch?v=TTG4wVW64Lg", "t": "Jhené Aiko - Summer 2020", "m": ["Melancholic"] },
+    { "u": "https://www.youtube.com/watch?v=2SFt7JHwJeg", "t": "Kool & the Gang - Summer Madness", "m": ["Melancholic"] },
+    { "u": "https://www.youtube.com/watch?v=0eajPLUwfTk", "t": "Shiloh Dynasty - So Low", "m": ["Sad"] },
+    { "u": "https://www.youtube.com/watch?v=jYFz6b2Kgx4", "t": "Shiloh Dynasty - Novacaine", "m": ["Sad"] },
+    { "u": "https://www.youtube.com/watch?v=SvlcpJX4Dn0", "t": "Arrested Development - People Everyday", "m": ["Happy"] },
+    { "u": "https://www.youtube.com/watch?v=K4KK33HAAVU", "t": "Late Kids - Run", "m": ["Happy"] },
+    { "u": "https://www.youtube.com/watch?v=ASpA9Zd2Z0o", "t": "Pretty Lights - Finally Moving", "m": ["Energetic"] },
+    { "u": "https://www.youtube.com/watch?v=RecY5iZn6B0", "t": "Chaka Khan - Like Sugar", "m": ["Energetic"] }
+  ]
+}
