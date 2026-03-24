@@ -2,11 +2,9 @@ import React, { useEffect, useState } from 'react';
 
 // Maps full names to single letters
 const MOOD_MAP = {
-  'Happy': 'H',
-  'Sad': 'S',
-  'Energetic': 'E',
-  'Melancholic': 'M',
-  'Calm': 'C'
+  'Happy': 'H', 'Sad': 'S', 'Energetic': 'E',
+  'Melancholic': 'M', 'Calm': 'C',
+  'Romantic': 'R', 'Spooky': 'Sp', 'Hopeful': 'Ho'
 };
 
 const MoodHUD = ({ currentMood, onMoodChange }) => {
@@ -19,7 +17,7 @@ const MoodHUD = ({ currentMood, onMoodChange }) => {
     const handleAutoMood = (mood, line, intensity) => {
       // 1. Light it up!
       setDetectedMood(mood);
-      
+
       // 2. Tell the parent app to switch music
       if (onMoodChange) onMoodChange(mood);
 
@@ -28,8 +26,8 @@ const MoodHUD = ({ currentMood, onMoodChange }) => {
     };
 
     // The listener you added to preload.js
-    window.electron.on('auto-mood-detected', handleAutoMood);
-  }, [onMoodChange]);
+window.electronAPI.onAutoMoodDetected(handleAutoMood);
+}, [onMoodChange]);
 
   return (
     <div style={styles.container}>
@@ -38,7 +36,7 @@ const MoodHUD = ({ currentMood, onMoodChange }) => {
         const isActive = currentMood === moodName;
         const isFlashed = detectedMood === moodName;
         const letter = MOOD_MAP[moodName];
-        
+
         return (
           <div
             key={moodName}
@@ -66,14 +64,16 @@ const MoodHUD = ({ currentMood, onMoodChange }) => {
 // --- STYLES ---
 const styles = {
   container: {
-    position: 'fixed', 
+      display: 'flex',
+       flexDirection: 'column',
+    position: 'fixed',
     top: '50%',          // Center vertically
     left: '20px',
     transform: 'translateY(-50%)', // Perfect centering
     flexDirection: 'column',       // <--- Stack them vertically
     gap: '12px',
     zIndex: 9999,
-    background: 'rgba(0,0,0,0.4)', 
+    background: 'rgba(0,0,0,0.4)',
     padding: '10px',
     borderRadius: '20px',
     backdropFilter: 'blur(4px)'
@@ -101,6 +101,9 @@ const getMoodColor = (mood) => {
     case 'Energetic': return '#FF4500';  // Red/Orange
     case 'Melancholic': return '#9370DB';// Purple
     case 'Calm': return '#00FA9A';       // Spring Green
+    case 'Romantic': return '#FF69B4';  // Hot pink
+    case 'Spooky': return '#DC2626';   // Sickly green
+    case 'Hopeful': return '#87CEEB';
     default: return '#FFF';
   }
 };

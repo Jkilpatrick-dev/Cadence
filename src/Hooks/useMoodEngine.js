@@ -1,19 +1,21 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-
+import { MOODS } from '../constants';
 // Configuration constants
 const SCORE_THRESHOLD = 3;
+
 const DECAY_INTERVAL = 10000;
 const KEYWORD_WEIGHTS = {
-  'Sad': 2, 'Happy': 2, 'Energetic': 2, 'Melancholic': 2, 'Calm': 2
+  'Sad': 2, 'Happy': 2, 'Energetic': 2, 'Melancholic': 2, 'Calm': 2,'Romantic': 2, 'Spooky': 2, 'Hopeful': 2
 };
 
 export function useMoodEngine(onMoodTrigger,threshold = 3) {
-  const [moodScores, setMoodScores] = useState({ 
-    Happy: 0, Sad: 0,  Energetic: 0,Melancholic: 0, Calm: 0 
-  });
+const [moodScores, setMoodScores] = useState(
+  Object.fromEntries(MOODS.map(m => [m, 0]))
+);
   const [currentMood, setCurrentMood] = useState(null);
   const [isAutoMode, setIsAutoMode] = useState(false);
-  
+  const isAutoModeRef = useRef(false);
+useEffect(() => { isAutoModeRef.current = isAutoMode; }, [isAutoMode]);
   // Refs to prevent stale closures
   const currentMoodRef = useRef(currentMood);
   const isTransitioningRef = useRef(false);
@@ -69,7 +71,7 @@ export function useMoodEngine(onMoodTrigger,threshold = 3) {
 
     const removeListener = window.electronAPI.onAutoMoodDetected((detectedMood, rawText, intensity = 1) => {
       // Gatekeeper: Only process if Auto Mode is actually ON in state
-      if (isTransitioningRef.current || !isAutoMode) return;
+if (isTransitioningRef.current || !isAutoModeRef.current) return;
 
         if (detectedMood === currentMoodRef.current) {
       console.log(`⏭️ Already in ${detectedMood}, ignoring keyword`);
@@ -98,8 +100,8 @@ export function useMoodEngine(onMoodTrigger,threshold = 3) {
           
           if (onMoodTrigger) onMoodTrigger(detectedMood);
           
-          setTimeout(() => { isTransitioningRef.current = false; }, 2000);
-          return { Happy: 0, Sad: 0,  Energetic: 0,Melancholic: 0, Calm: 0 };
+          setTimeout(() => { isTransitioningRef.current = false; }, 8000);
+           return Object.fromEntries(MOODS.map(m => [m, 0])); 
         }
         
         return { ...prev, [detectedMood]: newScore };

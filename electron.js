@@ -1,27 +1,27 @@
 require('dotenv').config();
-const { app, BrowserWindow, ipcMain, dialog, protocol, net, shell,Menu,session } = require('electron'); 
+const { app, BrowserWindow, ipcMain, dialog, protocol, net, shell, Menu, session, globalShortcut } = require('electron');
 const path = require('path');
-const fs = require('fs').promises; 
-const http = require('http');      
+const fs = require('fs').promises;
+const http = require('http');
 
-const chokidar = require('chokidar'); 
+const chokidar = require('chokidar');
 const YOUTUBE_API_KEY = process.env.VITE_YOUTUBE_API_KEY;
 protocol.registerSchemesAsPrivileged([
-  { 
-    scheme: 'media', 
-    privileges: { 
-      standard: true, 
-      secure: true, 
-      supportFetchAPI: true, 
-      bypassCSP: true, 
-      stream: true 
-    } 
+  {
+    scheme: 'media',
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: true,
+      bypassCSP: true,
+      stream: true
+    }
   }
 ]);
 
 // --- 2. SETTINGS & VARS ---
 const isDev = !app.isPackaged;
-const PORT = 3000; 
+const PORT = 3000;
 let mainWindow;
 
 // --- 3. START INTERNAL SERVER (Production Only) ---
@@ -34,10 +34,10 @@ if (!isDev) {
       ]
     });
   });
-  
-server.listen(PORT, '127.0.0.1', () => {
-  console.log(`🚀 Internal Server running SECURELY on http://127.0.0.1:${PORT}`);
-});
+
+  server.listen(PORT, '127.0.0.1', () => {
+    console.log(`🚀 Internal Server running SECURELY on http://127.0.0.1:${PORT}`);
+  });
 }
 
 // --- 4. CREATE WINDOW ---
@@ -45,20 +45,20 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
- transparent: true,     
-    frame: false,           
-        thickFrame: false, 
+    transparent: true,
+    frame: false,
+    thickFrame: false,
     titleBarStyle: 'hidden',
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
-      webSecurity: false 
+      webSecurity: false
     }
   });
- mainWindow.webContents.on('context-menu', (event, params) => {
+  mainWindow.webContents.on('context-menu', (event, params) => {
     const { isEditable, editFlags } = params;
-    
+
     if (isEditable) {
       const menu = Menu.buildFromTemplate([
         { label: 'Cut', role: 'cut', enabled: editFlags.canCut },
@@ -67,7 +67,7 @@ function createWindow() {
         { type: 'separator' },
         { label: 'Select All', role: 'selectAll', enabled: editFlags.canSelectAll }
       ]);
-      
+
       menu.popup();
     }
   });
@@ -94,7 +94,7 @@ function createWindow() {
 
   if (isDev) {
     console.log("🔧 Mode: DEVELOPMENT");
-    mainWindow.loadURL('http://localhost:5173'); 
+    mainWindow.loadURL('http://localhost:5173');
     mainWindow.webContents.openDevTools();
   } else {
     console.log("🏭 Mode: PRODUCTION (Server-backed)");
@@ -107,28 +107,37 @@ app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 app.commandLine.appendSwitch('disable-features', 'OutOfBlinkCors');
 
 app.whenReady().then(async () => {
- await session.defaultSession.clearCache(); 
+  await session.defaultSession.clearCache();
   protocol.handle('media', (request) => {
     let filePath = request.url.replace('media://', '');
     if (filePath.match(/^[a-zA-Z]\//)) {
-        filePath = filePath[0].toUpperCase() + ':' + filePath.slice(1);
+      filePath = filePath[0].toUpperCase() + ':' + filePath.slice(1);
     }
     const decodedPath = decodeURIComponent(filePath);
     try {
-        const finalUrl = require('url').pathToFileURL(decodedPath).toString();
-        return net.fetch(finalUrl);
+      const finalUrl = require('url').pathToFileURL(decodedPath).toString();
+      return net.fetch(finalUrl);
     } catch (error) {
-        return new Response('File not found', { status: 404 });
+      return new Response('File not found', { status: 404 });
     }
   });
 
   createWindow();
+
+  globalShortcut.register('MediaPlayPause', () => {
+    mainWindow.webContents.send('toggle-pause');
+  });
+  globalShortcut.register('F9', () => {
+    mainWindow.webContents.send('toggle-pause');
+  });
 });
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
-
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll();
+});
 // --- 7. IPC HANDLERS ---
 
 ipcMain.handle('select-folder', async () => {
@@ -175,8 +184,8 @@ ipcMain.handle('import-youtube-playlist', async (event, playlistUrl) => {
       }
 
       // Filter out deleted/private videos
-      const validVideos = (data.items || []).filter(v => 
-        v.snippet.title !== 'Deleted video' && 
+      const validVideos = (data.items || []).filter(v =>
+        v.snippet.title !== 'Deleted video' &&
         v.snippet.title !== 'Private video'
       );
 
@@ -251,7 +260,7 @@ ipcMain.handle('start-dialogue-monitor', async (event, filePath) => {
     }
 
     try {
-      await fs.writeFile(filePath, '', 'utf-8'); 
+      await fs.writeFile(filePath, '', 'utf-8');
       lastFileSize = 0;
       console.log("🧹 Session started: Log file cleared.");
     } catch (e) {
@@ -260,17 +269,17 @@ ipcMain.handle('start-dialogue-monitor', async (event, filePath) => {
     }
 
     if (debounceTimer) { clearTimeout(debounceTimer); debounceTimer = null; }
-    
+
     await fs.access(filePath);
-    
-    dialogueWatcher = chokidar.watch(filePath, { 
+
+    dialogueWatcher = chokidar.watch(filePath, {
       persistent: true, usePolling: true, interval: 500,
       awaitWriteFinish: { stabilityThreshold: 200, pollInterval: 100 }
     });
 
     dialogueWatcher.on('change', async () => {
       const now = Date.now();
-      if (now - lastChangeTime < 100) return; 
+      if (now - lastChangeTime < 100) return;
       lastChangeTime = now;
 
       try {
@@ -326,16 +335,23 @@ ipcMain.handle('stop-dialogue-monitor', async () => {
 function analyzeMood(text) {
   if (!text) return null;
   const lowerText = text.toLowerCase();
-  
+
   const moodKeywords = {
     'Sad': ['cry', 'sob', 'weep', 'tear', 'died', 'death', 'lost', 'goodbye', 'miss', 'alone', 'pain', 'hurt', 'broken', 'funeral', 'grief', 'sorry', 'stupid'],
-    'Happy': ['smile', 'laugh', 'haha', 'love', 'wonderful', 'excited', 'amazing', 'perfect', 'beautiful', 'joy', 'happy', 'great', 'fantastic', 'blush', 'giggle', 'glad', 'thanks'],
+    'Happy': ['haha', 'wonderful', 'excited', 'amazing', 'perfect',
+      'joy', 'happy', 'fantastic', 'blush', 'giggle', 'glad'],
     'Energetic': ['battle', 'power', 'run', 'fast', 'quick', 'hurry', 'action', 'intense', 'victory', 'danger', 'suddenly', 'clash', 'emergency', 'strike', 'stop', 'escalated', 'combat'],
     'Melancholic': ['memory', 'past', 'nostalgic', 'hollow', 'distant', 'fade', 'dream', 'sigh', 'lonely', 'autumn', 'nostalgia', 'stare', 'silent', 'quiet', 'shadow', 'years', 'old', 'remind', 'drift', 'window', 'sunset', 'night', 'staring', 'cold', 'winter', 'gray', 'grey', 'slowly', 'thinking'],
-    'Calm': ['peaceful', 'relax', 'calm', 'quiet', 'gentle', 'soft', 'slow', 'serene', 'tranquil', 'rest', 'breeze', 'afternoon', 'warm', 'sleepy', 'steady', 'safe', 'sit']
+    'Calm': ['peaceful', 'relax', 'calm', 'quiet', 'gentle', 'soft', 'slow', 'serene', 'tranquil', 'rest', 'breeze', 'afternoon', 'warm', 'sleepy', 'steady', 'safe', 'sit'],
+    'Romantic': ['heart', 'darling', 'kiss', 'together', 'hold', 'feelings', 'confess', 'longing', 'tender', 'embrace'],
+    'Spooky': ['dark', 'ghost', 'fear', 'scream', 'haunted', 'curse', 'blood', 'terror', 'eerie', 'dread'],
+    'Hopeful': ['hope', 'someday', 'believe', 'chance', 'begin', 'tomorrow', 'forward', 'dawn', 'overcome', 'wish', 'brighter', 'courage'],
   };
 
-  let lineScores = { 'Sad': 0, 'Happy': 0, 'Energetic': 0, 'Melancholic': 0, 'Calm': 0 };
+  let lineScores = {
+    'Sad': 0, 'Happy': 0, 'Energetic': 0, 'Melancholic': 0, 'Calm': 0,
+    'Romantic': 0, 'Spooky': 0, 'Hopeful': 0
+  };
   let foundAny = false;
 
   for (const [mood, keywords] of Object.entries(moodKeywords)) {

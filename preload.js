@@ -10,7 +10,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Mini mode functions - ADD THESE IF MISSING
   toggleAlwaysOnTop: (enabled) => ipcRenderer.invoke('toggle-always-on-top', enabled),
   setMiniMode: (isMini) => ipcRenderer.invoke('set-mini-mode', isMini),
-  
+onTogglePause: (callback) => {
+  const subscription = (_event) => callback();
+  ipcRenderer.on('toggle-pause', subscription);
+  return () => ipcRenderer.removeListener('toggle-pause', subscription);
+},
   // Dialogue monitoring functions - ADD THESE IF MISSING
   startDialogueMonitor: (filePath) => ipcRenderer.invoke('start-dialogue-monitor', filePath),
   stopDialogueMonitor: () => ipcRenderer.invoke('stop-dialogue-monitor'),
